@@ -14,7 +14,7 @@ pub struct Cyberfall;
 impl Plugin for Cyberfall {
     const AUTHOR: &'static U16CStr = wcstr!("Cyberfall");
     const NAME: &'static U16CStr = wcstr!("Cyberfall");
-    const VERSION: SemVer = SemVer::new(1, 0, 0);
+    const VERSION: SemVer = SemVer::new(1, 1, 0);
 
     fn exports() -> impl Exportable {
         exports![

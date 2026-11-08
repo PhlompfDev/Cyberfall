@@ -4,7 +4,7 @@
 use glam::Vec3;
 use pilot_core::collide::is_wall;
 use pilot_core::settings::{apply, WallSettings};
-use pilot_core::wall::{leave, touched_ground, wall_step, WallEvent, WallEnd, WallInput, WallReading, WallState, WallStep};
+use pilot_core::wall::{kick_velocity, leave, touched_ground, wall_step, WallEvent, WallEnd, WallInput, WallReading, WallState, WallStep};
 use pilot_core::Tuning;
 
 const TUNING: &str = include_str!("../../../tuning/pilot.toml");
@@ -32,6 +32,8 @@ pub struct Bridge {
     // (distance, clearance) of a bump ahead, for the next step only.
     ahead: Option<(f32, f32)>,
     touch_refresh: bool,
+    kick_window: f32,
+    kick_normal: Vec3,
 }
 
 impl Default for Bridge {
@@ -58,6 +60,8 @@ impl Bridge {
             prev_speed: 0.0,
             ahead: None,
             touch_refresh: false,
+            kick_window: 0.0,
+            kick_normal: Vec3::ZERO,
         }
     }
 
@@ -127,6 +131,28 @@ impl Bridge {
         self.input.yaw
     }
 
+    /// Jump was pressed just after leaving a wall without a kick: kick off it anyway.
+    fn late_kick(&mut self) -> bool {
+        let look = Vec3::new(self.input.yaw.cos(), self.input.yaw.sin(), 0.0);
+        self.velocity = kick_velocity(self.velocity, self.kick_normal, look, &self.tuning);
+        self.kick_window = 0.0;
+        self.touch_refresh = false;
+        self.last = Some(WallStep {
+            velocity: self.velocity,
+            state: self.state,
+            events: vec![WallEvent::Kicked],
+            ended: Some(WallEnd::Kicked),
+            roll: 0.0,
+            refresh_air_moves: false,
+        });
+        false
+    }
+
+    /// A jump now still kicks off the wall just left.
+    pub fn kick_window_open(&self) -> bool {
+        self.kick_window > 0.0
+    }
+
     /// One frame. Returns whether V is wallrunning.
     pub fn step(&mut self, ground_clear: bool, dt: f32) -> bool {
         if !self.settings.enabled {
@@ -143,6 +169,10 @@ impl Bridge {
             });
             return false;
         }
+        if !self.state.running && self.input.jump_pressed && self.kick_window > 0.0 {
+            return self.late_kick();
+        }
+        self.kick_window = (self.kick_window - dt).max(0.0);
         let speed_now = flat(self.velocity).length();
         let entry_speed = speed_now.max(self.prev_speed);
         self.prev_speed = speed_now;
@@ -152,6 +182,10 @@ impl Bridge {
         let out = wall_step(&self.state, self.velocity, reading, ground_clear, &self.input, &self.tuning, dt);
         self.state = out.state;
         self.velocity = out.velocity;
+        if out.ended.is_some_and(|end| end != WallEnd::Kicked) {
+            self.kick_window = self.tuning.host_late_kick_window;
+            self.kick_normal = self.state.last_normal;
+        }
         if out.events.contains(&WallEvent::Started) {
             self.velocity = keep_entry_speed(self.velocity, entry_speed, self.tuning.host_entry_keep);
         }
@@ -248,6 +282,7 @@ impl Bridge {
 
     pub fn touched_ground(&mut self) {
         self.prev_speed = 0.0;
+        self.kick_window = 0.0;
         self.state = touched_ground(&self.state);
     }
 
@@ -275,6 +310,7 @@ impl Bridge {
         self.prev_speed = 0.0;
         self.ahead = None;
         self.touch_refresh = false;
+        self.kick_window = 0.0;
     }
 }
 

@@ -37,10 +37,10 @@ public func OnExit(stateContext: ref<StateContext>, scriptInterface: ref<StateGa
   wrappedMethod(stateContext, scriptInterface);
 }
 
-// Jump on a wall is a kick, not a double jump.
+// Jump on a wall, or just after leaving one, is a kick, not a double jump.
 @wrapMethod(DoubleJumpDecisions)
 protected const func EnterCondition(const stateContext: ref<StateContext>, const scriptInterface: ref<StateGameScriptInterface>) -> Bool {
-  if CyberfallWallIsRunning() || CyberfallWallEnded() == 1 {
+  if CyberfallWallIsRunning() || CyberfallWallEnded() == 1 || CyberfallWallKickWindow() {
     return false;
   };
   return wrappedMethod(stateContext, scriptInterface);
@@ -56,6 +56,16 @@ public func OnEnter(stateContext: ref<StateContext>, scriptInterface: ref<StateG
     CyberfallWallAirDash();
   };
   CyberfallLevelCamera(scriptInterface);
+}
+
+// unsecureFootingFall (slipping off an edge) can't double jump or dash until landing,
+// and the game also picks it mid-wallrun. Fall normally instead.
+@wrapMethod(UnsecureFootingFallDecisions)
+protected const func EnterCondition(const stateContext: ref<StateContext>, const scriptInterface: ref<StateGameScriptInterface>) -> Bool {
+  if CyberfallWallEnabled() {
+    return false;
+  };
+  return wrappedMethod(stateContext, scriptInterface);
 }
 
 // doubleJump can't re-enter itself, so once a wall gives the double jump back, drop to fall.
@@ -122,7 +132,7 @@ private final func CyberfallWallUpdate(timeDelta: Float, stateContext: ref<State
     stateContext.SetPermanentIntParameter(n"currentNumberOfAirDodges", 0, true);
     stateContext.SetPermanentBoolParameter(n"disableAirDash", false, true);
   };
-  if !running && !wasRunning {
+  if !running && !wasRunning && CyberfallWallEnded() != 1 {
     CyberfallWallAdvanceAir(timeDelta);
     this.CyberfallApplyCameraRoll(scriptInterface, timeDelta);
     return;

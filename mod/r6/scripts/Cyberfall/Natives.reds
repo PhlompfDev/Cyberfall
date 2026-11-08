@@ -13,6 +13,7 @@ public native func CyberfallWallStarted() -> Bool;
 // 0 none, 1 kicked, 2 timed out, 3 let go, 4 lost the wall
 public native func CyberfallWallEnded() -> Int32;
 public native func CyberfallWallRefreshAirMoves() -> Bool;
+public native func CyberfallWallKickWindow() -> Bool;
 public native func CyberfallWallVelocityX() -> Float;
 public native func CyberfallWallVelocityY() -> Float;
 public native func CyberfallWallVelocityZ() -> Float;

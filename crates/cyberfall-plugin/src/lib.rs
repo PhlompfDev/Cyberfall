@@ -30,6 +30,7 @@ impl Plugin for Cyberfall {
             GlobalExport(global!(c"CyberfallWallStarted", started)),
             GlobalExport(global!(c"CyberfallWallEnded", ended)),
             GlobalExport(global!(c"CyberfallWallRefreshAirMoves", refresh_air_moves)),
+            GlobalExport(global!(c"CyberfallWallKickWindow", kick_window)),
             GlobalExport(global!(c"CyberfallWallVelocityX", velocity_x)),
             GlobalExport(global!(c"CyberfallWallVelocityY", velocity_y)),
             GlobalExport(global!(c"CyberfallWallVelocityZ", velocity_z)),
@@ -105,6 +106,10 @@ fn ended() -> i32 {
 
 fn refresh_air_moves() -> bool {
     bridge().refresh_air_moves()
+}
+
+fn kick_window() -> bool {
+    bridge().kick_window_open()
 }
 
 fn velocity_x() -> f32 {

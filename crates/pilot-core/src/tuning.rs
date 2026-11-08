@@ -87,6 +87,7 @@ pub struct Tuning {
     pub host_bump_max_clearance: f32,
     pub host_grab_distance: f32,
     pub host_wall_min_heights: f32,
+    pub host_late_kick_window: f32,
 }
 
 impl Tuning {

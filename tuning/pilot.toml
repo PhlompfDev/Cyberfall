@@ -168,3 +168,5 @@ host_bump_max_clearance = 0.5
 host_grab_distance = 0.10
 # source: estimate (probe heights out of 3 that must see a wall; keeps low barriers from counting)
 host_wall_min_heights = 2
+# source: estimate (seconds after leaving a wall without kicking that jump still kicks)
+host_late_kick_window = 0.2

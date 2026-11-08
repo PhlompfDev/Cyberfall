@@ -470,3 +470,64 @@ fn running_off_the_top_of_a_wall_ends_the_run() {
     }
     assert_eq!(b.ended(), ENDED_LOST);
 }
+
+/// Bucked off the wall without a kick: crouch lets go.
+fn bucked_off() -> Bridge {
+    let mut b = on_wall();
+    b.set_input(1.0, 0.0, 1.0, 0.0, false, true);
+    assert!(!b.step(true, DT));
+    assert_ne!(b.ended(), ENDED_KICKED);
+    b
+}
+
+fn press_jump(b: &mut Bridge) {
+    b.set_reading(false, 0.0, 0.0, 0.0, 0.0, 0);
+    b.set_input(1.0, 0.0, 1.0, 0.0, true, false);
+    b.step(true, DT);
+}
+
+#[test]
+fn a_jump_just_after_getting_bucked_off_still_kicks() {
+    let mut b = bucked_off();
+    assert!(b.kick_window_open());
+    let t = *b.tuning();
+    press_jump(&mut b);
+    assert_eq!(b.ended(), ENDED_KICKED);
+    assert!((b.velocity().y - t.wall_kick_out_speed).abs() < 1e-3, "pushed out from the wall: {}", b.velocity().y);
+    assert!((b.velocity().z - t.wall_kick_up_speed).abs() < 1e-3);
+    assert!(!b.kick_window_open(), "one late kick per wall");
+}
+
+#[test]
+fn a_jump_after_the_window_is_left_to_the_game() {
+    let mut b = bucked_off();
+    let window = b.tuning().host_late_kick_window;
+    let mut waited = 0.0;
+    while waited <= window {
+        b.set_reading(false, 0.0, 0.0, 0.0, 0.0, 0);
+        b.set_input(1.0, 0.0, 1.0, 0.0, false, false);
+        b.step(true, DT);
+        waited += DT;
+    }
+    assert!(!b.kick_window_open());
+    let before = b.velocity();
+    press_jump(&mut b);
+    assert_ne!(b.ended(), ENDED_KICKED);
+    assert_eq!(b.velocity(), before, "a double jump is the game's");
+}
+
+#[test]
+fn a_real_kick_opens_no_window() {
+    let mut b = on_wall();
+    b.set_input(1.0, 0.0, 1.0, 0.0, true, false);
+    b.step(true, DT);
+    assert_eq!(b.ended(), ENDED_KICKED);
+    assert!(!b.kick_window_open());
+}
+
+#[test]
+fn landing_closes_the_window() {
+    let mut b = bucked_off();
+    b.touched_ground();
+    assert!(!b.kick_window_open());
+}

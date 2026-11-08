@@ -4,7 +4,7 @@
 use glam::Vec3;
 use pilot_core::collide::is_wall;
 use pilot_core::settings::{apply, WallSettings};
-use pilot_core::wall::{leave, same_wall, touched_ground, wall_step, WallEvent, WallEnd, WallInput, WallReading, WallState, WallStep};
+use pilot_core::wall::{leave, touched_ground, wall_step, WallEvent, WallEnd, WallInput, WallReading, WallState, WallStep};
 use pilot_core::Tuning;
 
 const TUNING: &str = include_str!("../../../tuning/pilot.toml");
@@ -155,7 +155,7 @@ impl Bridge {
         if out.events.contains(&WallEvent::Started) {
             self.velocity = keep_entry_speed(self.velocity, entry_speed, self.tuning.host_entry_keep);
         }
-        self.touch_refresh = !self.state.running && reading.is_some_and(|r| self.touches_wall_just_left(&r));
+        self.touch_refresh = !self.state.running && reading.is_some_and(|r| self.touches_wall(&r));
         if self.state.running {
             let n = self.state.normal;
             match self.bump_out(ahead, gap, dt) {
@@ -167,12 +167,10 @@ impl Bridge {
         self.state.running
     }
 
-    /// The wall V just left still gives back air moves, though it can't be run again yet.
-    fn touches_wall_just_left(&self, r: &WallReading) -> bool {
+    /// Any wall touch gives back air moves, even one that doesn't start a run.
+    fn touches_wall(&self, r: &WallReading) -> bool {
         let t = &self.tuning;
-        is_wall(r.normal, t)
-            && r.distance <= t.wallrun_grab_distance
-            && same_wall(&self.state, flat(r.normal).normalize_or_zero(), t)
+        is_wall(r.normal, t) && r.distance <= t.wallrun_grab_distance
     }
 
     /// Speed out from the wall that gets V around a bump in time.

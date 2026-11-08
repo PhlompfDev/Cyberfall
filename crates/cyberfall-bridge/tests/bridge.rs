@@ -377,12 +377,33 @@ fn a_wall_out_of_grab_reach_gives_nothing_back() {
 }
 
 #[test]
-fn a_touch_too_slow_to_run_gives_nothing_back() {
+fn a_touch_too_slow_to_run_still_gives_back_air_moves() {
     let mut b = Bridge::new();
     b.set_velocity(1.0, -1.0, 0.0);
     b.set_reading(true, 0.0, 1.0, 0.0, 0.0, 3);
     b.set_input(1.0, 0.0, 1.0, 0.0, false, false);
     assert!(!b.step(true, DT));
+    assert!(b.refresh_air_moves());
+}
+
+#[test]
+fn getting_shoved_off_a_wall_still_gives_back_air_moves() {
+    // Touching the wall while moving away from it: no run, but the touch counts.
+    let mut b = Bridge::new();
+    b.set_velocity(6.0, 3.0, 0.0);
+    b.set_reading(true, 0.0, 1.0, 0.0, 0.0, 3);
+    b.set_input(1.0, 0.0, 1.0, 0.0, false, false);
+    assert!(!b.step(true, DT));
+    assert!(b.refresh_air_moves());
+}
+
+#[test]
+fn a_low_barrier_gives_nothing_back() {
+    let mut b = Bridge::new();
+    b.set_velocity(1.0, -1.0, 0.0);
+    b.set_reading(true, 0.0, 1.0, 0.0, 0.0, 1);
+    b.set_input(1.0, 0.0, 1.0, 0.0, false, false);
+    b.step(true, DT);
     assert!(!b.refresh_air_moves());
 }
 

@@ -34,6 +34,8 @@ pub struct Bridge {
     touch_refresh: bool,
     kick_window: f32,
     kick_normal: Vec3,
+    // Fastest along-wall speed of the current run.
+    run_speed: f32,
 }
 
 impl Default for Bridge {
@@ -62,6 +64,7 @@ impl Bridge {
             touch_refresh: false,
             kick_window: 0.0,
             kick_normal: Vec3::ZERO,
+            run_speed: 0.0,
         }
     }
 
@@ -131,6 +134,16 @@ impl Bridge {
         self.input.yaw
     }
 
+    /// Bumps and bends in the wall don't cost speed along it.
+    fn hold_run_speed(&mut self, n: Vec3) {
+        let along = flat(self.velocity - n * self.velocity.dot(n));
+        let speed = along.length();
+        if speed > 1e-3 && speed < self.run_speed {
+            self.velocity += along * (self.run_speed / speed - 1.0);
+        }
+        self.run_speed = self.run_speed.max(speed);
+    }
+
     /// Jump was pressed just after leaving a wall without a kick: kick off it anyway.
     fn late_kick(&mut self) -> bool {
         let look = Vec3::new(self.input.yaw.cos(), self.input.yaw.sin(), 0.0);
@@ -188,10 +201,12 @@ impl Bridge {
         }
         if out.events.contains(&WallEvent::Started) {
             self.velocity = keep_entry_speed(self.velocity, entry_speed, self.tuning.host_entry_keep);
+            self.run_speed = 0.0;
         }
         self.touch_refresh = !self.state.running && reading.is_some_and(|r| self.touches_wall(&r));
         if self.state.running {
             let n = self.state.normal;
+            self.hold_run_speed(n);
             match self.bump_out(ahead, gap, dt) {
                 Some(out_speed) => self.velocity += n * out_speed,
                 None => self.velocity -= n * self.tuning.host_wall_glue_speed,

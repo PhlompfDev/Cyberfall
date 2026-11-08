@@ -531,3 +531,75 @@ fn landing_closes_the_window() {
     b.touched_ground();
     assert!(!b.kick_window_open());
 }
+
+/// Horizontal speed along the wall whose face looks along `normal`.
+fn along_wall_speed(b: &Bridge, normal: Vec3) -> f32 {
+    let v = b.velocity();
+    let flat = Vec3::new(v.x, v.y, 0.0);
+    (flat - normal * flat.dot(normal)).length()
+}
+
+#[test]
+fn a_bump_on_the_wall_costs_no_speed() {
+    let mut b = on_wall();
+    let speed = along(&b);
+    // A pipe: the game's collision cut V's speed along the wall.
+    b.set_velocity(3.0, -0.5, 0.0);
+    b.set_reading(true, 0.0, 1.0, 0.0, 0.0, 3);
+    b.set_input(1.0, 0.0, 1.0, 0.0, false, false);
+    assert!(b.step(true, DT));
+    assert!(along(&b) >= speed - 1e-3, "kept {} of {}", along(&b), speed);
+}
+
+#[test]
+fn a_bend_in_the_wall_costs_no_speed() {
+    let mut b = on_wall();
+    let speed = along(&b);
+    // The wall turns 30 degrees away; V is still heading straight on.
+    let a = 30f32.to_radians();
+    let bent = Vec3::new(-a.sin(), a.cos(), 0.0);
+    b.set_velocity(speed, 0.0, 0.0);
+    b.set_reading(true, bent.x, bent.y, 0.0, 0.0, 3);
+    b.set_input(1.0, 0.0, 1.0, 0.0, false, false);
+    assert!(b.step(true, DT));
+    assert!(along_wall_speed(&b, bent) >= speed - 1e-3, "kept {} of {}", along_wall_speed(&b, bent), speed);
+}
+
+#[test]
+fn a_dead_stop_still_ends_the_run() {
+    let mut b = on_wall();
+    b.set_velocity(0.5, 0.0, 0.0);
+    b.set_reading(true, 0.0, 1.0, 0.0, 0.0, 3);
+    b.set_input(1.0, 0.0, 1.0, 0.0, false, false);
+    assert!(!b.step(true, DT));
+    assert!(b.velocity().x < 1.0, "not shot back up to speed");
+}
+
+#[test]
+fn a_new_run_does_not_inherit_the_last_runs_speed() {
+    let mut b = on_wall();
+    b.set_input(1.0, 0.0, 1.0, 0.0, false, true);
+    b.step(true, DT);
+    b.touched_ground();
+    b.set_velocity(4.0, -0.5, 0.0);
+    b.set_reading(true, 0.0, 1.0, 0.0, 0.0, 3);
+    b.set_input(1.0, 0.0, 1.0, 0.0, false, false);
+    assert!(b.step(true, DT));
+    b.set_velocity(3.5, -0.2, 0.0);
+    b.set_reading(true, 0.0, 1.0, 0.0, 0.0, 3);
+    b.step(true, DT);
+    assert!(along(&b) < 5.0, "held to this run's speed: {}", along(&b));
+}
+
+#[test]
+fn a_run_of_bumps_costs_no_speed() {
+    let mut b = on_wall();
+    let speed = along(&b);
+    for _ in 0..3 {
+        b.set_velocity(3.0, -0.5, 0.0);
+        b.set_reading(true, 0.0, 1.0, 0.0, 0.0, 3);
+        b.set_input(1.0, 0.0, 1.0, 0.0, false, false);
+        assert!(b.step(true, DT));
+    }
+    assert!(along(&b) >= speed - 1e-3, "kept {} of {}", along(&b), speed);
+}

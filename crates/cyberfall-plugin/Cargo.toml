@@ -1,0 +1,14 @@
+# Separate workspace: red4ext-rs needs LLVM and CMake to build.
+[package]
+name = "cyberfall-plugin"
+version = "1.0.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+cyberfall-bridge = { path = "../cyberfall-bridge" }
+red4ext-rs = { git = "https://github.com/jac3km4/red4ext-rs", rev = "07cb409" }
+
+[workspace]

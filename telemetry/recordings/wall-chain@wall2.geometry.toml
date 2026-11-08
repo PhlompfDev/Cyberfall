@@ -1,0 +1,13 @@
+# Wall 2 of the take: wall rows 4.51-5.03 s, 144 units along
+# direction (-1.000, +0.000), face normal (+0.000, +1.000). The face passes
+# 16 units (the pilot's half-width) behind the first wall row's position.
+# The window ends 0.1 s after V leaves the wall: after that, air control is
+# Cyberpunk's, not the mod's. The floor is put well below the window.
+start = 4.460
+end = 5.130
+floor_z = 24.866
+
+[[box]]
+centre = [-21.299, 52.075, 29.245]
+half_extents = [2.453, 0.25, 3.676]
+yaw_deg = 180.00

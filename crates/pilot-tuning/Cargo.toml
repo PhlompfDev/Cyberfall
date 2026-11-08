@@ -1,0 +1,11 @@
+[package]
+name = "pilot-tuning"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+pilot-core = { path = "../pilot-core" }
+toml.workspace = true
+
+[dev-dependencies]
+glam.workspace = true

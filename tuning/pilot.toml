@@ -1,0 +1,170 @@
+# Cyberfall tuning. Metres, seconds, degrees. Titanfall units are 0.0254 m.
+# Compiled into the plugin: rebuild after editing (scripts/install-dev.ps1).
+# Every value needs a `# source:` line above it:
+#   telemetry     fitted to recorded Titanfall 2 movement
+#   tf2-settings  from Titanfall 2's player settings
+#   published     from published movement analysis
+#   host-scale    matched to Cyberpunk's scale
+#   estimate      picked by feel
+
+# --- Body ---
+# source: host-scale
+capsule_radius = 0.35
+# source: host-scale
+stand_height = 1.8
+# source: host-scale
+crouch_height = 1.0
+# source: host-scale
+stand_eye_height = 1.65
+# source: host-scale
+crouch_eye_height = 0.9
+# source: estimate
+slide_eye_height = 0.7
+# source: estimate (m/s)
+eye_height_rate = 5.0
+
+# --- Collision ---
+# source: estimate
+collision_skin = 0.005
+# source: published (Quake-style move loops)
+max_bumps = 4
+# source: tf2-settings stepheight = 18
+step_height = 0.4572
+# source: estimate
+max_slope_deg = 45.0
+# source: estimate
+ground_probe_distance = 0.1
+# source: estimate (a surface is a wall when |normal.z| is below this)
+wall_max_normal_z = 0.2
+# source: estimate
+surface_probe_out = 0.01
+# source: estimate
+surface_probe_up = 0.03
+
+# --- Ground ---
+# source: telemetry jump
+gravity = 15.24
+# source: tf2-settings speed = 173.5
+walk_speed = 4.4069
+# source: tf2-settings sprintspeed = 260
+sprint_speed = 6.604
+# source: tf2-settings crouch speed = 80
+crouch_speed = 2.032
+# source: telemetry sprint, walk
+ground_accel = 101.6
+# source: telemetry sprint, walk
+ground_friction = 38.1
+# source: estimate
+landing_friction_grace = 0.15
+
+# --- Air ---
+# source: telemetry jump
+jump_speed = 7.46
+# source: telemetry jump
+double_jump_speed = 7.5133
+# source: estimate
+double_jump_boost = 2.0
+# source: telemetry air-strafe
+air_accel = 12.7
+# source: telemetry air-strafe
+air_wish_cap = 1.524
+
+# --- Slide ---
+# source: estimate
+slide_entry_speed = 5.0
+# source: telemetry slide
+slide_exit_speed = 3.2258
+# source: tf2-settings slidedecel = 50
+slide_decel = 1.27
+# source: tf2-settings slidevelocitydecay = 0.7, as -ln(0.7)
+slide_decay_rate = 0.3567
+# source: telemetry slide-hop
+slide_boost_speed = 3.81
+# source: telemetry slide, slide-hop
+slide_boost_max_speed = 10.16
+# source: estimate
+slide_boost_cooldown = 2.0
+# source: estimate
+slide_steer_accel = 3.0
+
+# --- Wallrun ---
+# source: estimate (along-wall speed needed to start)
+wallrun_min_speed = 3.0
+# source: estimate (moving away from a wall faster than this won't start a run)
+wallrun_max_away_speed = 1.0
+# source: telemetry wallrun (top speed)
+wallrun_speed = 9.398
+# source: telemetry wallrun
+wallrun_accel_rate = 3.6
+# source: tf2-settings wallrun_timeLimit
+wallrun_time_limit = 1.75
+# source: telemetry wallrun
+wallrun_vertical_damping = 5.5
+# source: telemetry wallrun (how fast you sink the longer you run)
+wallrun_sink_ramp = 2.794
+# source: telemetry wallrun
+wallrun_lift = 1.397
+# source: telemetry wallrun
+wallrun_entry_up_speed = 6.35
+# source: estimate
+wallrun_min_ground_clearance = 0.5
+# source: estimate (how far a wall can drift before the run ends)
+wallrun_stick_distance = 0.3
+# source: host-scale (overridden by host_grab_distance in Cyberpunk)
+wallrun_grab_distance = 0.06
+# source: estimate (can't rerun the same wall for this long, unless you land)
+wallrun_same_wall_delay = 1.0
+# source: estimate
+wallrun_same_wall_dot = 0.9
+# source: telemetry wall-chain (steering this far away lets go)
+wallrun_detach_dot = 0.74
+# source: estimate
+wallrun_stall_speed = 1.5
+# source: tf2-settings wallrunJumpOutwardSpeed = 205
+wall_kick_out_speed = 5.207
+# source: tf2-settings wallrunJumpUpSpeed = 230
+wall_kick_up_speed = 5.842
+# source: tf2-settings wallrunJumpInputDirSpeed = 80
+wall_kick_look_speed = 2.032
+# source: telemetry wallrun
+wall_fall_off_push = 1.778
+# source: estimate (camera lean)
+wallrun_roll_deg = 15.0
+# source: estimate
+roll_rate_deg = 120.0
+# source: host-scale
+max_wall_dt = 0.0333
+
+# --- Mantle ---
+# source: estimate
+mantle_min_height = 0.6
+# source: estimate
+mantle_max_height = 2.3
+# source: estimate
+mantle_forward = 0.5
+# source: estimate
+mantle_time = 0.35
+# source: estimate
+mantle_exit_speed = 3.0
+# source: estimate
+mantle_min_approach_dot = 0.5
+
+# --- Cyberpunk only ---
+# source: estimate (multiplies wall_kick_up_speed)
+host_kick_up_scale = 0.75
+# source: estimate (m/s pushed into the wall while running)
+host_wall_glue_speed = 1.5
+# source: estimate (seconds a run survives a gap in the wall)
+host_wall_lost_grace = 0.2
+# source: estimate (share of into-wall speed turned along the wall, 0 to 1)
+host_entry_keep = 1.0
+# source: estimate (m/s, steering around things sticking out of walls)
+host_bump_speed = 4.0
+# source: estimate (seconds of look-ahead for bumps)
+host_bump_lookahead = 0.15
+# source: estimate (biggest bump steered around, m)
+host_bump_max_clearance = 0.5
+# source: estimate (how close a wall must be to grab it, m)
+host_grab_distance = 0.10
+# source: estimate (probe heights out of 3 that must see a wall; keeps low barriers from counting)
+host_wall_min_heights = 2

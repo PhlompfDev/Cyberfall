@@ -1,0 +1,9 @@
+[package]
+name = "cyberfall-bridge"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+pilot-core = { path = "../pilot-core" }
+pilot-tuning = { path = "../pilot-tuning" }
+glam.workspace = true

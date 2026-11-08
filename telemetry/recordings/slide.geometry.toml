@@ -1,0 +1,3 @@
+# Past about 3.75 s the floor is no longer flat: the recorded deceleration
+# wanders and the speed even rises. Only the flat part is compared.
+end = 3.75

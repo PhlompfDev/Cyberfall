@@ -1,0 +1,9 @@
+[package]
+name = "world-parry"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+pilot-core = { path = "../pilot-core" }
+glam.workspace = true
+parry3d.workspace = true

@@ -1,0 +1,11 @@
+[package]
+name = "gym"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+pilot-core = { path = "../pilot-core" }
+pilot-tuning = { path = "../pilot-tuning" }
+world-parry = { path = "../world-parry" }
+glam.workspace = true
+bevy.workspace = true

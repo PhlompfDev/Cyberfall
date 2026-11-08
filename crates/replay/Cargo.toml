@@ -1,0 +1,12 @@
+[package]
+name = "replay"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+pilot-core = { path = "../pilot-core" }
+pilot-tuning = { path = "../pilot-tuning" }
+world-parry = { path = "../world-parry" }
+glam.workspace = true
+serde.workspace = true
+toml.workspace = true

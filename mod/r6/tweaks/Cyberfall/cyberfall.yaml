@@ -1,0 +1,30 @@
+# Tooltip lines for the Legendary+ Reinforced Tendons fall perks (Perks.reds).
+
+Cyberfall.TendonsFallSpeed:
+  $type: GameplayLogicPackage
+  UIData: Cyberfall.TendonsFallSpeed_UI
+Cyberfall.TendonsFallSpeed_UI:
+  $type: GameplayLogicPackageUIData
+  iconPath: ability_silenced
+  localizedDescription: LocKey#Cyberfall-Tendons-FallSpeed
+
+Cyberfall.TendonsHardLanding:
+  $type: GameplayLogicPackage
+  UIData: Cyberfall.TendonsHardLanding_UI
+Cyberfall.TendonsHardLanding_UI:
+  $type: GameplayLogicPackageUIData
+  iconPath: ability_silenced
+  localizedDescription: LocKey#Cyberfall-Tendons-HardLanding
+
+Items.AdvancedBoostedTendonsLegendary:
+  OnEquip:
+    - !append-once Cyberfall.TendonsFallSpeed
+    - !append-once Cyberfall.TendonsHardLanding
+Items.AdvancedBoostedTendonsLegendaryPlus:
+  OnEquip:
+    - !append-once Cyberfall.TendonsFallSpeed
+    - !append-once Cyberfall.TendonsHardLanding
+Items.AdvancedBoostedTendonsLegendaryPlusPlus:
+  OnEquip:
+    - !append-once Cyberfall.TendonsFallSpeed
+    - !append-once Cyberfall.TendonsHardLanding

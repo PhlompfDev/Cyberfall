@@ -1,0 +1,11 @@
+/target
+# Game files must never be committed.
+*.vpk
+*.rpak
+*.starpak
+*.archive
+*.mdl
+*.bsp
+*.wav
+*.bik
+/crates/cyberfall-plugin/target

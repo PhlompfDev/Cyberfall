@@ -1,0 +1,12 @@
+[package]
+name = "pilot-core"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+glam.workspace = true
+serde.workspace = true
+
+[dev-dependencies]
+pilot-tuning = { path = "../pilot-tuning" }
+world-parry = { path = "../world-parry" }

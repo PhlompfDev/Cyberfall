@@ -248,3 +248,32 @@ fn a_slide_that_drops_below_sprint_speed_ends_the_sprint() {
     assert_eq!(s.mode, Mode::Sliding);
     assert!(!s.sprinting);
 }
+
+// Slide math the game host calls directly, without a pilot-core world.
+
+#[test]
+fn a_boost_adds_speed_up_to_the_cap() {
+    let t = tuning();
+    assert!((pilot_core::slide::boosted_speed(5.0, &t) - 8.81).abs() < 1e-3);
+    assert!((pilot_core::slide::boosted_speed(8.0, &t) - 10.16).abs() < 1e-3);
+    assert_eq!(pilot_core::slide::boosted_speed(11.0, &t), 11.0, "a boost never slows");
+}
+
+#[test]
+fn a_flat_slide_loses_speed_by_the_titanfall_curve() {
+    let t = tuning();
+    let v = pilot_core::slide::slide_velocity(Vec3::new(10.0, 0.0, 0.0), Vec3::ZERO, Some(Vec3::Z), &t, 0.1);
+    let expected = 10.0 - (t.slide_decel + t.slide_decay_rate * 10.0) * 0.1;
+    assert!((v.length() - expected).abs() < 1e-3);
+    assert!((expected - (10.0 - (1.27 + 0.3567 * 10.0) * 0.1)).abs() < 1e-3);
+}
+
+#[test]
+fn downhill_slides_faster_than_flat() {
+    let t = tuning();
+    let slope = Vec3::new(0.3, 0.0, 1.0).normalize();
+    let down = pilot_core::slide::slide_velocity(Vec3::new(8.0, 0.0, 0.0), Vec3::ZERO, Some(slope), &t, 0.1);
+    let flat = pilot_core::slide::slide_velocity(Vec3::new(8.0, 0.0, 0.0), Vec3::ZERO, Some(Vec3::Z), &t, 0.1);
+    assert!(down.length() > flat.length());
+    assert_eq!(down.z, 0.0, "horizontal only");
+}

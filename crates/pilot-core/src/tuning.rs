@@ -88,6 +88,12 @@ pub struct Tuning {
     pub host_grab_distance: f32,
     pub host_wall_min_heights: f32,
     pub host_late_kick_window: f32,
+    pub host_charge_low_time: f32,
+    pub host_charge_med_time: f32,
+    pub host_charge_max_time: f32,
+    pub host_charge_low_scale: f32,
+    pub host_charge_med_scale: f32,
+    pub host_charge_max_scale: f32,
 }
 
 impl Tuning {

@@ -1,6 +1,9 @@
 //! Game-facing wrapper around the wall controller: set inputs, `step`, read results.
 //! Cyberpunk-only adjustments (`host_*` in tuning/pilot.toml) are applied here.
 
+pub mod charge;
+
+use charge::{charged, tier_for_hold};
 use glam::Vec3;
 use pilot_core::collide::is_wall;
 use pilot_core::settings::{apply, WallSettings};
@@ -36,6 +39,13 @@ pub struct Bridge {
     kick_normal: Vec3,
     // Fastest along-wall speed of the current run.
     run_speed: f32,
+    // Charge-jump legs: the kick fires on release and grows with the hold.
+    has_charge_jump: bool,
+    jump_held: bool,
+    charging: bool,
+    charge_time: f32,
+    // Charge tier of the most recent kick, 0 for a normal one.
+    kick_tier: i32,
 }
 
 impl Default for Bridge {
@@ -65,6 +75,11 @@ impl Bridge {
             kick_window: 0.0,
             kick_normal: Vec3::ZERO,
             run_speed: 0.0,
+            has_charge_jump: false,
+            jump_held: false,
+            charging: false,
+            charge_time: 0.0,
+            kick_tier: 0,
         }
     }
 
@@ -113,6 +128,44 @@ impl Bridge {
         };
     }
 
+    /// Every air frame, before `step`: whether the legs give the charge jump, and whether Jump is down.
+    pub fn set_charge(&mut self, has_charge_jump: bool, jump_held: bool) {
+        self.has_charge_jump = has_charge_jump;
+        self.jump_held = jump_held;
+    }
+
+    pub fn charging(&self) -> bool {
+        self.charging
+    }
+
+    /// Charge tier of the most recent kick: 0 normal, 3 full.
+    pub fn charge_tier(&self) -> i32 {
+        self.kick_tier
+    }
+
+    /// The input and tuning `wall_step` sees this frame: with charge-jump legs the kick
+    /// waits for Jump to be let go, and grows with how long it was held.
+    fn charge_frame(&mut self, dt: f32) -> (WallInput, Tuning) {
+        let mut input = self.input;
+        if !self.state.running || !self.has_charge_jump {
+            return (input, self.tuning);
+        }
+        if !self.charging && input.jump_pressed {
+            self.charging = true;
+            self.charge_time = 0.0;
+        }
+        if !self.charging {
+            return (input, self.tuning);
+        }
+        if self.jump_held {
+            self.charge_time += dt;
+            input.jump_pressed = false;
+            return (input, self.tuning);
+        }
+        input.jump_pressed = true;
+        (input, charged(&self.tuning, tier_for_hold(self.charge_time, &self.tuning).1))
+    }
+
     /// `clearance` below zero means a solid wall ahead.
     pub fn set_ahead(&mut self, blocked: bool, distance: f32, clearance: f32) {
         self.ahead = blocked.then_some((distance, clearance));
@@ -149,6 +202,7 @@ impl Bridge {
         let look = Vec3::new(self.input.yaw.cos(), self.input.yaw.sin(), 0.0);
         self.velocity = kick_velocity(self.velocity, self.kick_normal, look, &self.tuning);
         self.kick_window = 0.0;
+        self.kick_tier = 0;
         self.touch_refresh = false;
         self.last = Some(WallStep {
             velocity: self.velocity,
@@ -171,6 +225,7 @@ impl Bridge {
         if !self.settings.enabled {
             let was_running = self.state.running;
             self.state.running = false;
+            self.charging = false;
             self.touch_refresh = false;
             self.last = Some(WallStep {
                 velocity: self.velocity,
@@ -192,7 +247,27 @@ impl Bridge {
         let ahead = self.ahead.take();
         let reading = self.bridged_reading(dt);
         let gap = reading.map_or(0.0, |r| r.distance.max(0.0));
-        let out = wall_step(&self.state, self.velocity, reading, ground_clear, &self.input, &self.tuning, dt);
+        let velocity_before = self.velocity;
+        let (input, tuning) = self.charge_frame(dt);
+        let mut out = wall_step(&self.state, self.velocity, reading, ground_clear, &input, &tuning, dt);
+        if self.charging {
+            let tier = tier_for_hold(self.charge_time, &self.tuning);
+            if out.ended.is_some_and(|end| end != WallEnd::Kicked) {
+                // The run ended mid-charge: kick with what was charged.
+                let look = Vec3::new(self.input.yaw.cos(), self.input.yaw.sin(), 0.0);
+                out.velocity = kick_velocity(velocity_before, out.state.last_normal, look, &charged(&self.tuning, tier.1));
+                out.ended = Some(WallEnd::Kicked);
+                out.events.push(WallEvent::Kicked);
+            }
+            if out.ended.is_some() {
+                self.kick_tier = tier.0;
+            }
+        } else if out.ended == Some(WallEnd::Kicked) {
+            self.kick_tier = 0;
+        }
+        if !out.state.running {
+            self.charging = false;
+        }
         self.state = out.state;
         self.velocity = out.velocity;
         if out.ended.is_some_and(|end| end != WallEnd::Kicked) {
@@ -290,12 +365,14 @@ impl Bridge {
     }
 
     pub fn air_dash(&mut self) {
+        self.charging = false;
         if self.state.running {
             self.state = leave(&self.state);
         }
     }
 
     pub fn touched_ground(&mut self) {
+        self.charging = false;
         self.prev_speed = 0.0;
         self.kick_window = 0.0;
         self.state = touched_ground(&self.state);
@@ -326,6 +403,7 @@ impl Bridge {
         self.ahead = None;
         self.touch_refresh = false;
         self.kick_window = 0.0;
+        self.charging = false;
     }
 }
 

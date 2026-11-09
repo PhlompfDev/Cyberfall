@@ -30,3 +30,8 @@ public native func CyberfallWallBumpMaxClearance() -> Float;
 public native func CyberfallWallCameraRoll(dt: Float) -> Float;
 public native func CyberfallWallGroundClearance() -> Float;
 public native func CyberfallWallStickDistance() -> Float;
+// Charge-jump legs: the wall kick waits for Jump to be let go and grows with the hold.
+public native func CyberfallWallSetCharge(hasChargeJump: Bool, jumpHeld: Bool) -> Void;
+public native func CyberfallWallCharging() -> Bool;
+// Charge tier of the most recent kick: 0 normal, 3 full.
+public native func CyberfallWallChargeTier() -> Int32;

@@ -45,7 +45,10 @@ impl Plugin for Cyberfall {
             GlobalExport(global!(c"CyberfallWallBumpMaxClearance", bump_max_clearance)),
             GlobalExport(global!(c"CyberfallWallCameraRoll", camera_roll)),
             GlobalExport(global!(c"CyberfallWallGroundClearance", ground_clearance)),
-            GlobalExport(global!(c"CyberfallWallStickDistance", stick_distance))
+            GlobalExport(global!(c"CyberfallWallStickDistance", stick_distance)),
+            GlobalExport(global!(c"CyberfallWallSetCharge", set_charge)),
+            GlobalExport(global!(c"CyberfallWallCharging", charging)),
+            GlobalExport(global!(c"CyberfallWallChargeTier", charge_tier))
         ]
     }
 }
@@ -170,4 +173,16 @@ fn ground_clearance() -> f32 {
 
 fn stick_distance() -> f32 {
     bridge().stick_distance()
+}
+
+fn set_charge(has_charge_jump: bool, jump_held: bool) {
+    bridge().set_charge(has_charge_jump, jump_held);
+}
+
+fn charging() -> bool {
+    bridge().charging()
+}
+
+fn charge_tier() -> i32 {
+    bridge().charge_tier()
 }

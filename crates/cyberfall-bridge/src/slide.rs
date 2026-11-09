@@ -25,6 +25,8 @@ pub struct Slide {
     // Toggle crouch: a tap in the air switches crouch on for the landing, a second tap off.
     toggle_armed: bool,
     last_begin: Option<f32>,
+    // The game hasn't been given the start speed yet, so its first report says nothing about collisions.
+    fresh: bool,
     input: Input,
     crouch_held: bool,
 }
@@ -42,6 +44,7 @@ impl Slide {
             crouch_held_in_air: false,
             toggle_armed: false,
             last_begin: None,
+            fresh: false,
             input: Input::default(),
             crouch_held: false,
         }
@@ -112,6 +115,7 @@ impl Slide {
         self.last_begin = Some(now);
         self.velocity = direction * speed;
         self.active = true;
+        self.fresh = true;
         self.landed();
     }
 
@@ -128,8 +132,9 @@ impl Slide {
         }
         let reported = Vec3::new(vx, vy, 0.0);
         let own = Vec3::new(self.velocity.x, self.velocity.y, 0.0);
-        let held = own.length().min(reported.length() + COLLISION_SLACK);
-        let direction = reported.try_normalize().unwrap_or(own.normalize_or_zero());
+        let held = if self.fresh { own.length() } else { own.length().min(reported.length() + COLLISION_SLACK) };
+        let direction = if self.fresh { own.normalize_or_zero() } else { reported.try_normalize().unwrap_or(own.normalize_or_zero()) };
+        self.fresh = false;
         let normal = Vec3::new(nx, ny, nz);
         let ground = (normal.length_squared() > 1e-6).then(|| normal.normalize());
         let flat = slide_velocity(direction * held, self.input.wish_dir(), ground, &self.tuning, dt);

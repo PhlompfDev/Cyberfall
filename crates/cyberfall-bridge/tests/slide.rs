@@ -129,6 +129,7 @@ fn small_collision_losses_do_not_slow_the_slide() {
 #[test]
 fn hitting_something_does_slow_the_slide() {
     let mut s = sliding_unboosted(10.0);
+    s.step(10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 / 60.0);
     s.step(2.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.1);
     assert!(s.velocity().length() < 3.0, "{}", s.velocity().length());
 }
@@ -216,4 +217,29 @@ fn landing_clears_a_toggle_tap() {
     s.landed();
     fall(&mut s, 8.0, false);
     assert!(!s.wants_landing_slide());
+}
+
+#[test]
+fn the_start_boost_survives_the_first_frame() {
+    // The game reports the unboosted speed on the first slide frame: it hasn't been given the boost yet.
+    let mut s = slide();
+    s.begin(8.25, 0.0, 10.0, false);
+    let boosted = s.velocity().length();
+    assert!(boosted > 10.0);
+    s.set_input(0.0, 0.0, 1.0, 0.0, true);
+    s.step(8.25, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 / 60.0);
+    assert!(s.velocity().length() > boosted - 0.2, "boost kept: {} of {}", s.velocity().length(), boosted);
+}
+
+#[test]
+fn the_speed_setting_changes_how_fast_a_slide_starts() {
+    let mut slow = slide();
+    let mut fast = slide();
+    fast.set_settings(true, 2.0);
+    for s in [&mut slow, &mut fast] {
+        s.begin(8.25, 0.0, 10.0, false);
+        s.set_input(0.0, 0.0, 1.0, 0.0, true);
+        s.step(8.25, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 / 60.0);
+    }
+    assert!(fast.velocity().length() > slow.velocity().length() + 3.0, "{} vs {}", fast.velocity().length(), slow.velocity().length());
 }

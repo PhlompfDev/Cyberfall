@@ -21,6 +21,8 @@ public class CyberfallEnglish extends ModLocalizationPackage {
       "Removes falling penalty from <Rich color=\"TooltipText.cyberwareDescriptionHighlightColor\" style=\"Semi-Bold\">double jump</> and <Rich color=\"TooltipText.cyberwareDescriptionHighlightColor\" style=\"Semi-Bold\">dash</>.");
     this.Text("Cyberfall-Tendons-HardLanding",
       "Rough landings don't slow you down or deal <Rich color=\"TooltipText.cyberwareDescriptionHighlightColor\" style=\"Semi-Bold\">fall damage</>.");
+    this.Text("Cyberfall-Ankles-ChargedKick",
+      "Hold <Rich color=\"TooltipText.cyberwareDescriptionHighlightColor\" style=\"Semi-Bold\">Jump</> while wallrunning for a <Rich color=\"TooltipText.cyberwareDescriptionHighlightColor\" style=\"Semi-Bold\">charged wall kick</>.");
   }
 
   protected func DefineSubtitles() -> Void {}

@@ -27,6 +27,7 @@ private let m_cyberfallGravityOff: Bool;
 @wrapMethod(LocomotionAirEvents)
 protected func OnUpdate(timeDelta: Float, stateContext: ref<StateContext>, scriptInterface: ref<StateGameScriptInterface>) -> Void {
   wrappedMethod(timeDelta, stateContext, scriptInterface);
+  CyberfallSlideNoteAirFrame(timeDelta, stateContext, scriptInterface);
   CyberfallSoftenLanding(stateContext, scriptInterface);
   this.CyberfallWallUpdate(timeDelta, stateContext, scriptInterface);
 }
@@ -35,6 +36,15 @@ protected func OnUpdate(timeDelta: Float, stateContext: ref<StateContext>, scrip
 public func OnExit(stateContext: ref<StateContext>, scriptInterface: ref<StateGameScriptInterface>) -> Void {
   this.CyberfallRestoreGravity(stateContext, scriptInterface);
   wrappedMethod(stateContext, scriptInterface);
+}
+
+// Charge-jump legs charge the wall kick, so the game's charge jump stays off on walls.
+@wrapMethod(ChargeJumpDecisions)
+protected const func EnterCondition(const stateContext: ref<StateContext>, const scriptInterface: ref<StateGameScriptInterface>) -> Bool {
+  if CyberfallWallIsRunning() || CyberfallWallCharging() || CyberfallWallEnded() == 1 || CyberfallWallKickWindow() {
+    return false;
+  };
+  return wrappedMethod(stateContext, scriptInterface);
 }
 
 // Jump on a wall, or just after leaving one, is a kick, not a double jump.
@@ -126,7 +136,11 @@ private final func CyberfallWallUpdate(timeDelta: Float, stateContext: ref<State
     scriptInterface.IsActionJustPressed(n"Jump"),
     scriptInterface.IsActionJustPressed(n"Crouch") || scriptInterface.IsActionJustTapped(n"ToggleCrouch"));
 
+  CyberfallWallSetCharge(scriptInterface.HasStatFlag(gamedataStatType.HasChargeJump), scriptInterface.GetActionValue(n"Jump") > 0.0);
   let running: Bool = CyberfallWallStep(this.CyberfallGroundClear(scriptInterface, position), timeDelta);
+  if CyberfallWallEnded() == 1 && CyberfallWallChargeTier() == 3 {
+    this.CyberfallFullChargeFeedback(scriptInterface);
+  };
   if CyberfallWallRefreshAirMoves() {
     stateContext.SetPermanentIntParameter(n"currentNumberOfJumps", 0, true);
     stateContext.SetPermanentIntParameter(n"currentNumberOfAirDodges", 0, true);
@@ -261,6 +275,14 @@ private final func CyberfallFirstBlock(queries: ref<SpatialQueriesSystem>, wallP
     };
   };
   return nearest;
+}
+
+// The game's charge-jump feedback, without its pressure wave.
+@addMethod(LocomotionAirEvents)
+private final func CyberfallFullChargeFeedback(scriptInterface: ref<StateGameScriptInterface>) -> Void {
+  this.StartEffect(scriptInterface, n"charged_jump");
+  this.PlaySound(n"lcm_player_double_jump", scriptInterface);
+  DefaultTransition.PlayRumble(scriptInterface, "medium_fast");
 }
 
 @addMethod(LocomotionAirEvents)

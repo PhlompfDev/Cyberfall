@@ -1,4 +1,4 @@
-# Tooltip lines for the Legendary+ Reinforced Tendons fall perks (Perks.reds).
+# Tooltip lines for the Legendary+ leg fall perks and the charged wall kick (Perks.reds, Wallrun.reds).
 
 Cyberfall.TendonsFallSpeed:
   $type: GameplayLogicPackage
@@ -26,5 +26,48 @@ Items.AdvancedBoostedTendonsLegendaryPlus:
     - !append-once Cyberfall.TendonsHardLanding
 Items.AdvancedBoostedTendonsLegendaryPlusPlus:
   OnEquip:
+    - !append-once Cyberfall.TendonsFallSpeed
+    - !append-once Cyberfall.TendonsHardLanding
+
+Cyberfall.AnklesChargedKick:
+  $type: GameplayLogicPackage
+  UIData: Cyberfall.AnklesChargedKick_UI
+Cyberfall.AnklesChargedKick_UI:
+  $type: GameplayLogicPackageUIData
+  iconPath: ability_silenced
+  localizedDescription: LocKey#Cyberfall-Ankles-ChargedKick
+
+# Fortified Ankles is Items.AdvancedReinforcedMuscles<Quality> (docs/game-hooks.md).
+Items.AdvancedReinforcedMusclesUncommon:
+  OnEquip:
+    - !append-once Cyberfall.AnklesChargedKick
+Items.AdvancedReinforcedMusclesUncommonPlus:
+  OnEquip:
+    - !append-once Cyberfall.AnklesChargedKick
+Items.AdvancedReinforcedMusclesRare:
+  OnEquip:
+    - !append-once Cyberfall.AnklesChargedKick
+Items.AdvancedReinforcedMusclesRarePlus:
+  OnEquip:
+    - !append-once Cyberfall.AnklesChargedKick
+Items.AdvancedReinforcedMusclesEpic:
+  OnEquip:
+    - !append-once Cyberfall.AnklesChargedKick
+Items.AdvancedReinforcedMusclesEpicPlus:
+  OnEquip:
+    - !append-once Cyberfall.AnklesChargedKick
+Items.AdvancedReinforcedMusclesLegendary:
+  OnEquip:
+    - !append-once Cyberfall.AnklesChargedKick
+    - !append-once Cyberfall.TendonsFallSpeed
+    - !append-once Cyberfall.TendonsHardLanding
+Items.AdvancedReinforcedMusclesLegendaryPlus:
+  OnEquip:
+    - !append-once Cyberfall.AnklesChargedKick
+    - !append-once Cyberfall.TendonsFallSpeed
+    - !append-once Cyberfall.TendonsHardLanding
+Items.AdvancedReinforcedMusclesLegendaryPlusPlus:
+  OnEquip:
+    - !append-once Cyberfall.AnklesChargedKick
     - !append-once Cyberfall.TendonsFallSpeed
     - !append-once Cyberfall.TendonsHardLanding

@@ -8,6 +8,8 @@ local defaults = {
   speed = 100,
   kick = 100,
   tilt = 100,
+  slideEnabled = true,
+  slideSpeed = 100,
 }
 
 local settings = {}
@@ -42,6 +44,7 @@ end
 local function apply()
   Game.CyberfallWallSetSettings(settings.enabled, settings.needsPerk,
     settings.length / 100, settings.speed / 100, settings.kick / 100, settings.tilt / 100)
+  Game.CyberfallSlideSetSettings(settings.slideEnabled, settings.slideSpeed / 100)
 end
 
 local function setter(key)
@@ -59,11 +62,15 @@ local function menu()
   end
   local tab = "/Cyberfall"
   local section = tab .. "/wallrunning"
+  local sliding = tab .. "/sliding"
   if not ui.pathExists(tab) then
     ui.addTab(tab, "Cyberfall")
   end
   if ui.pathExists(section) then
     ui.removeSubcategory(section)
+  end
+  if ui.pathExists(sliding) then
+    ui.removeSubcategory(sliding)
   end
   ui.addSubcategory(section, "Wallrunning")
 
@@ -79,6 +86,12 @@ local function menu()
     25, 200, 5, "%.0f%%", settings.kick, defaults.kick, setter("kick"))
   ui.addRangeFloat(section, "Camera tilt", "How far the camera leans away from the wall. 0% turns it off.",
     0, 200, 5, "%.0f%%", settings.tilt, defaults.tilt, setter("tilt"))
+
+  ui.addSubcategory(sliding, "Sliding")
+  ui.addSwitch(sliding, "Momentum slide", "Titanfall-style slide: keeps your speed, and crouching into a landing slides. Off is the base game's slide.",
+    settings.slideEnabled, defaults.slideEnabled, setter("slideEnabled"))
+  ui.addRangeFloat(sliding, "Slide speed", "How much speed a slide adds. 100% is Titanfall 2.",
+    25, 200, 5, "%.0f%%", settings.slideSpeed, defaults.slideSpeed, setter("slideSpeed"))
 end
 
 registerForEvent("onInit", function()

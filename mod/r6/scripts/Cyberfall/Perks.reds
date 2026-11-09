@@ -1,13 +1,15 @@
-// Legendary+ Reinforced Tendons fall perks, and the Air Dash perk text.
+// Legendary+ leg cyberware fall perks (Reinforced Tendons and Fortified Ankles), and the Air Dash perk text.
 
-// Any Reinforced Tendons, modded variants included, at Legendary or above.
-public func CyberfallHasLegendaryTendons(owner: ref<GameObject>) -> Bool {
+// Reinforced Tendons or any charge-jump legs, modded variants included, at Legendary or above.
+public func CyberfallHasLegendaryLegs(owner: ref<GameObject>) -> Bool {
   let player: ref<PlayerPuppet> = owner as PlayerPuppet;
   if !IsDefined(player) {
     return false;
   };
   let legs: TweakDBID = ItemID.GetTDBID(EquipmentSystem.GetData(player).GetActiveItem(gamedataEquipmentArea.LegsCW));
-  if !Equals(TweakDBInterface.GetCName(legs + t".cyberwareType", n"None"), n"BoostedTendons") {
+  let tendons: Bool = Equals(TweakDBInterface.GetCName(legs + t".cyberwareType", n"None"), n"BoostedTendons");
+  let charge: Bool = GameInstance.GetStatsSystem(player.GetGame()).GetStatBoolValue(Cast<StatsObjectID>(player.GetEntityID()), gamedataStatType.HasChargeJump);
+  if !tendons && !charge {
     return false;
   };
   let record: ref<Item_Record> = TweakDBInterface.GetItemRecord(legs);
@@ -24,19 +26,21 @@ public func CyberfallHasLegendaryTendons(owner: ref<GameObject>) -> Bool {
 @wrapMethod(LocomotionTransition)
 protected final const func IsCurrentFallSpeedTooFastToEnter(const stateContext: ref<StateContext>, const scriptInterface: ref<StateGameScriptInterface>) -> Bool {
   let tooFast: Bool = wrappedMethod(stateContext, scriptInterface);
-  if tooFast && CyberfallWallEnabled() && CyberfallHasLegendaryTendons(scriptInterface.executionOwner) {
+  if tooFast && CyberfallWallEnabled() && CyberfallHasLegendaryLegs(scriptInterface.executionOwner) {
     return false;
   };
   return tooFast;
 }
 
-// Hard and very hard landings become regular ones. Death landings are untouched.
+// Hard and very hard landings become regular ones with Legendary+ legs or a landing slide.
+// Death landings are untouched.
 public func CyberfallSoftenLanding(stateContext: ref<StateContext>, scriptInterface: ref<StateGameScriptInterface>) -> Void {
   let landing: Int32 = stateContext.GetIntParameter(n"LandingType", true);
   if landing != EnumInt(LandingType.Hard) && landing != EnumInt(LandingType.VeryHard) {
     return;
   };
-  if CyberfallWallEnabled() && CyberfallHasLegendaryTendons(scriptInterface.executionOwner) {
+  let legs: Bool = CyberfallWallEnabled() && CyberfallHasLegendaryLegs(scriptInterface.executionOwner);
+  if legs || CyberfallSlideEnabled() && CyberfallSlideWantsLanding() {
     stateContext.SetPermanentIntParameter(n"LandingType", EnumInt(LandingType.Regular), true);
   };
 }

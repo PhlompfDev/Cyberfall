@@ -36,3 +36,34 @@ gravity is zeroed with a temporary `locomotionParameters` and restored with
 
 Cyberpunk is Z-up in metres like pilot-core, but its forward is +Y, so the facing
 is passed as a vector and the plugin takes `atan2(y, x)`.
+
+## Slides, landings and charge jumps (trace, 2026-11-08)
+
+From a per-frame trace of Locomotion state, speed and inputs, with SmoothMovement,
+SmootherDodgeAndDash and Immersive First Person installed.
+
+- **A landing is `fall`/`jump` → `regularLand` for one frame → `stand` or `sprint`.**
+  Horizontal speed barely changes through `regularLand`; the following `stand`/`sprint`
+  bleeds it back down to sprint speed (8.25 m/s here) over about 0.3 s. No base-game
+  path goes from a landing into `slide`.
+- **Into a slide:** from `sprint` the game asks `SlideDecisions.EnterCondition`; from
+  `stand` it asks `StandDecisions.ToSlide` (true only with the `JustDodgedLocomotion` tag,
+  just after a ground dodge).
+- **`slideFall` and `slideAfterFall`** are a slide that leaves a slope or edge and lands
+  again. Neither has its own script class: both run `SlideEvents`/`SlideDecisions`.
+- **An impulse works in the slide state.** A `+2 m/s` push set every frame through the
+  `impulse` temporary vector parameter added about 2 m/s per frame.
+- **Horizontal speed is capped at 15 m/s on the ground and 18 m/s in the air** in this
+  setup; slides, landings and jumps all flatten at exactly those values.
+- **Jump leaves a slide on the press frame** (no `minTimeToExit` wait), at the slide's speed.
+- **Toggle crouch:** `GetActionValue(n"Crouch")` stays 0; a tap is
+  `IsActionJustTapped(n"ToggleCrouch")` and sets the condition bool `CrouchToggled` on the
+  ground. In the air the tap registers but `CrouchToggled` stays false, and a jump clears it.
+- **A temporary `impulse` is applied on two frames if it isn't set again.** On the frame a
+  wall kick ends a run the mod sets one impulse and stops; the next frame's velocity shows
+  the same push a second time (a kick's up speed lands as about 2×). Frames that set an
+  impulse every frame (the run, the slide) overwrite it and see it once.
+- **The base game's charge jump can start from the `jump` state in the air** when Jump is
+  released after a long hold. Releasing Jump while wallrunning never started one.
+- **Fortified Ankles** is `Items.AdvancedReinforcedMuscles<Quality>`, `cyberwareType`
+  `ReinforcedMuscles`, and gives `HasChargeJump`.

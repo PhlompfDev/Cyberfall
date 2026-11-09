@@ -48,7 +48,20 @@ impl Plugin for Cyberfall {
             GlobalExport(global!(c"CyberfallWallStickDistance", stick_distance)),
             GlobalExport(global!(c"CyberfallWallSetCharge", set_charge)),
             GlobalExport(global!(c"CyberfallWallCharging", charging)),
-            GlobalExport(global!(c"CyberfallWallChargeTier", charge_tier))
+            GlobalExport(global!(c"CyberfallWallChargeTier", charge_tier)),
+            GlobalExport(global!(c"CyberfallSlideSetSettings", slide_set_settings)),
+            GlobalExport(global!(c"CyberfallSlideEnabled", slide_enabled)),
+            GlobalExport(global!(c"CyberfallSlideNoteAir", slide_note_air)),
+            GlobalExport(global!(c"CyberfallSlideWantsLanding", slide_wants_landing)),
+            GlobalExport(global!(c"CyberfallSlideBegin", slide_begin)),
+            GlobalExport(global!(c"CyberfallSlideSetInput", slide_set_input)),
+            GlobalExport(global!(c"CyberfallSlideStep", slide_step)),
+            GlobalExport(global!(c"CyberfallSlideVelocityX", slide_velocity_x)),
+            GlobalExport(global!(c"CyberfallSlideVelocityY", slide_velocity_y)),
+            GlobalExport(global!(c"CyberfallSlideVelocityZ", slide_velocity_z)),
+            GlobalExport(global!(c"CyberfallSlideActive", slide_active)),
+            GlobalExport(global!(c"CyberfallSlideEnd", slide_end)),
+            GlobalExport(global!(c"CyberfallSlideLanded", slide_landed))
         ]
     }
 }
@@ -185,4 +198,56 @@ fn charging() -> bool {
 
 fn charge_tier() -> i32 {
     bridge().charge_tier()
+}
+
+fn slide_set_settings(enabled: bool, speed: f32) {
+    bridge().slide_mut().set_settings(enabled, speed);
+}
+
+fn slide_enabled() -> bool {
+    bridge().slide().enabled()
+}
+
+fn slide_note_air(vx: f32, vy: f32, crouch_pressed: bool, crouch_held: bool, dt: f32) {
+    bridge().slide_mut().note_air(vx, vy, crouch_pressed, crouch_held, dt);
+}
+
+fn slide_wants_landing() -> bool {
+    bridge().slide().wants_landing_slide()
+}
+
+fn slide_begin(vx: f32, vy: f32, now: f32, from_landing: bool) {
+    bridge().slide_mut().begin(vx, vy, now, from_landing);
+}
+
+fn slide_set_input(forward: f32, right: f32, facing_x: f32, facing_y: f32, crouch_held: bool) {
+    bridge().slide_mut().set_input(forward, right, facing_x, facing_y, crouch_held);
+}
+
+fn slide_step(vx: f32, vy: f32, vz: f32, nx: f32, ny: f32, nz: f32, dt: f32) -> bool {
+    bridge().slide_mut().step(vx, vy, vz, nx, ny, nz, dt)
+}
+
+fn slide_velocity_x() -> f32 {
+    bridge().slide().velocity().x
+}
+
+fn slide_velocity_y() -> f32 {
+    bridge().slide().velocity().y
+}
+
+fn slide_velocity_z() -> f32 {
+    bridge().slide().velocity().z
+}
+
+fn slide_active() -> bool {
+    bridge().slide().active()
+}
+
+fn slide_end() {
+    bridge().slide_mut().end();
+}
+
+fn slide_landed() {
+    bridge().slide_mut().landed();
 }

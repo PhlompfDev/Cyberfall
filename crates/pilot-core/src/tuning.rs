@@ -94,6 +94,8 @@ pub struct Tuning {
     pub host_charge_low_scale: f32,
     pub host_charge_med_scale: f32,
     pub host_charge_max_scale: f32,
+    pub host_slide_entry_speed: f32,
+    pub host_slide_crouch_window: f32,
 }
 
 impl Tuning {

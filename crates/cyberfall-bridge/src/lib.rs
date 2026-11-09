@@ -2,8 +2,10 @@
 //! Cyberpunk-only adjustments (`host_*` in tuning/pilot.toml) are applied here.
 
 pub mod charge;
+pub mod slide;
 
 use charge::{charged, tier_for_hold};
+use slide::Slide;
 use glam::Vec3;
 use pilot_core::collide::is_wall;
 use pilot_core::settings::{apply, WallSettings};
@@ -46,6 +48,7 @@ pub struct Bridge {
     charge_time: f32,
     // Charge tier of the most recent kick, 0 for a normal one.
     kick_tier: i32,
+    slide: Slide,
 }
 
 impl Default for Bridge {
@@ -80,7 +83,16 @@ impl Bridge {
             charging: false,
             charge_time: 0.0,
             kick_tier: 0,
+            slide: Slide::new(&base),
         }
+    }
+
+    pub fn slide(&self) -> &Slide {
+        &self.slide
+    }
+
+    pub fn slide_mut(&mut self) -> &mut Slide {
+        &mut self.slide
     }
 
     pub fn base_tuning(&self) -> &Tuning {

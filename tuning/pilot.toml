@@ -182,3 +182,7 @@ host_charge_low_scale = 1.15
 host_charge_med_scale = 1.3
 # source: estimate (2.0 design, tune in playtest)
 host_charge_max_scale = 1.5
+# source: estimate (cyberpunk SlideDecisions minSpeedToEnter; slowest landing that slides, m/s)
+host_slide_entry_speed = 4.5
+# source: estimate (2.0 design; seconds before touchdown a crouch press still slides)
+host_slide_crouch_window = 0.25

@@ -35,3 +35,20 @@ public native func CyberfallWallSetCharge(hasChargeJump: Bool, jumpHeld: Bool) -
 public native func CyberfallWallCharging() -> Bool;
 // Charge tier of the most recent kick: 0 normal, 3 full.
 public native func CyberfallWallChargeTier() -> Int32;
+
+// Momentum slide.
+public native func CyberfallSlideSetSettings(enabled: Bool, speed: Float) -> Void;
+public native func CyberfallSlideEnabled() -> Bool;
+public native func CyberfallSlideNoteAir(vx: Float, vy: Float, crouchPressed: Bool, crouchHeld: Bool, dt: Float) -> Void;
+public native func CyberfallSlideWantsLanding() -> Bool;
+// now: game time, seconds.
+public native func CyberfallSlideBegin(vx: Float, vy: Float, now: Float, fromLanding: Bool) -> Void;
+public native func CyberfallSlideSetInput(forward: Float, right: Float, facingX: Float, facingY: Float, crouchHeld: Bool) -> Void;
+// Ground normal zero when none was seen. Returns whether the slide goes on.
+public native func CyberfallSlideStep(vx: Float, vy: Float, vz: Float, nx: Float, ny: Float, nz: Float, dt: Float) -> Bool;
+public native func CyberfallSlideVelocityX() -> Float;
+public native func CyberfallSlideVelocityY() -> Float;
+public native func CyberfallSlideVelocityZ() -> Float;
+public native func CyberfallSlideActive() -> Bool;
+public native func CyberfallSlideEnd() -> Void;
+public native func CyberfallSlideLanded() -> Void;

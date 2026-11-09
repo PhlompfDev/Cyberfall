@@ -243,3 +243,47 @@ fn the_speed_setting_changes_how_fast_a_slide_starts() {
     }
     assert!(fast.velocity().length() > slow.velocity().length() + 3.0, "{} vs {}", fast.velocity().length(), slow.velocity().length());
 }
+
+/// Slide for `seconds` with the game reporting back what the slide asked for.
+fn slide_for(s: &mut Slide, seconds: f32) -> bool {
+    let mut going = true;
+    for _ in 0..(seconds / DT).round() as usize {
+        let v = s.velocity();
+        going = s.step(v.x, v.y, 0.0, 0.0, 0.0, 1.0, DT);
+    }
+    going
+}
+
+#[test]
+fn a_slide_never_drops_below_sprint_speed() {
+    let mut s = sliding_unboosted(15.0);
+    s.set_sprint_speed(8.25);
+    assert!(slide_for(&mut s, 3.0), "still sliding while crouched");
+    assert!((s.velocity().length() - 8.25).abs() < 0.05, "{}", s.velocity().length());
+}
+
+#[test]
+fn a_fast_slide_still_eases_down_toward_sprint_speed() {
+    let mut s = sliding_unboosted(15.0);
+    s.set_sprint_speed(8.25);
+    slide_for(&mut s, 0.5);
+    let speed = s.velocity().length();
+    assert!(speed < 14.0 && speed > 8.25, "{speed}");
+}
+
+#[test]
+fn hitting_a_wall_still_stops_a_slide_held_at_sprint_speed() {
+    let mut s = sliding_unboosted(10.0);
+    s.set_sprint_speed(8.25);
+    s.step(10.0, 0.0, 0.0, 0.0, 0.0, 1.0, DT);
+    s.step(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, DT);
+    assert!(s.velocity().length() < 2.0, "{}", s.velocity().length());
+}
+
+#[test]
+fn letting_go_of_crouch_still_ends_a_slide_held_at_sprint_speed() {
+    let mut s = sliding_unboosted(10.0);
+    s.set_sprint_speed(8.25);
+    s.set_input(0.0, 0.0, 1.0, 0.0, false);
+    assert!(!s.step(10.0, 0.0, 0.0, 0.0, 0.0, 1.0, DT));
+}

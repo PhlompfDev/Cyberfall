@@ -27,6 +27,8 @@ pub struct Slide {
     last_begin: Option<f32>,
     // The game hasn't been given the start speed yet, so its first report says nothing about collisions.
     fresh: bool,
+    // V's sprint speed in Cyberpunk, buffs included. 0 until the game reports one.
+    sprint_speed: f32,
     input: Input,
     crouch_held: bool,
 }
@@ -45,6 +47,7 @@ impl Slide {
             toggle_armed: false,
             last_begin: None,
             fresh: false,
+            sprint_speed: 0.0,
             input: Input::default(),
             crouch_held: false,
         }
@@ -119,6 +122,11 @@ impl Slide {
         self.landed();
     }
 
+    /// While sprinting: the speed sprinting holds, so a slide never gives back more than that.
+    pub fn set_sprint_speed(&mut self, speed: f32) {
+        self.sprint_speed = speed.max(0.0);
+    }
+
     pub fn set_input(&mut self, forward: f32, right: f32, facing_x: f32, facing_y: f32, crouch_held: bool) {
         self.input = Input { move_forward: forward, move_right: right, yaw: facing_y.atan2(facing_x), ..Input::default() };
         self.crouch_held = crouch_held;
@@ -137,7 +145,12 @@ impl Slide {
         self.fresh = false;
         let normal = Vec3::new(nx, ny, nz);
         let ground = (normal.length_squared() > 1e-6).then(|| normal.normalize());
-        let flat = slide_velocity(direction * held, self.input.wish_dir(), ground, &self.tuning, dt);
+        let mut flat = slide_velocity(direction * held, self.input.wish_dir(), ground, &self.tuning, dt);
+        // Cyberpunk runs faster than Titanfall: a slide going at least sprint speed eases down to it,
+        // never below. A slide slowed under it, by a hit or a slow start, runs out as in Titanfall.
+        if held >= self.sprint_speed && flat.length() < self.sprint_speed {
+            flat = flat.try_normalize().unwrap_or(direction) * self.sprint_speed;
+        }
         self.velocity = Vec3::new(flat.x, flat.y, vz);
         flat.length() >= self.tuning.slide_exit_speed && self.crouch_held
     }

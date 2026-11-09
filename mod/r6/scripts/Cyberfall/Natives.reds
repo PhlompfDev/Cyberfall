@@ -52,3 +52,5 @@ public native func CyberfallSlideVelocityZ() -> Float;
 public native func CyberfallSlideActive() -> Bool;
 public native func CyberfallSlideEnd() -> Void;
 public native func CyberfallSlideLanded() -> Void;
+// While sprinting: V's sprint speed, the slowest a fast slide eases down to.
+public native func CyberfallSlideSetSprintSpeed(speed: Float) -> Void;

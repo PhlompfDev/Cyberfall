@@ -61,7 +61,8 @@ impl Plugin for Cyberfall {
             GlobalExport(global!(c"CyberfallSlideVelocityZ", slide_velocity_z)),
             GlobalExport(global!(c"CyberfallSlideActive", slide_active)),
             GlobalExport(global!(c"CyberfallSlideEnd", slide_end)),
-            GlobalExport(global!(c"CyberfallSlideLanded", slide_landed))
+            GlobalExport(global!(c"CyberfallSlideLanded", slide_landed)),
+            GlobalExport(global!(c"CyberfallSlideSetSprintSpeed", slide_set_sprint_speed))
         ]
     }
 }
@@ -250,4 +251,8 @@ fn slide_end() {
 
 fn slide_landed() {
     bridge().slide_mut().landed();
+}
+
+fn slide_set_sprint_speed(speed: f32) {
+    bridge().slide_mut().set_sprint_speed(speed);
 }

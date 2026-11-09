@@ -10,14 +10,14 @@ fn slide() -> Slide {
 
 /// Falling along +X at `speed` for two frames.
 fn fall(s: &mut Slide, speed: f32, crouch_held: bool) {
-    s.note_air(speed, 0.0, false, crouch_held, DT);
-    s.note_air(speed, 0.0, false, crouch_held, DT);
+    s.note_air(speed, 0.0, false, crouch_held, false, DT);
+    s.note_air(speed, 0.0, false, crouch_held, false, DT);
 }
 
 fn frames_without_crouch(s: &mut Slide, seconds: f32) {
     let frames = (seconds / DT).round() as usize;
     for _ in 0..frames {
-        s.note_air(8.0, 0.0, false, false, DT);
+        s.note_air(8.0, 0.0, false, false, false, DT);
     }
 }
 
@@ -55,7 +55,7 @@ fn no_crouch_no_slide() {
 #[test]
 fn a_crouch_press_just_before_landing_counts() {
     let mut s = slide();
-    s.note_air(8.0, 0.0, true, false, DT);
+    s.note_air(8.0, 0.0, true, false, false, DT);
     frames_without_crouch(&mut s, 0.2);
     assert!(s.wants_landing_slide());
 }
@@ -63,7 +63,7 @@ fn a_crouch_press_just_before_landing_counts() {
 #[test]
 fn a_crouch_press_too_early_does_not_count() {
     let mut s = slide();
-    s.note_air(8.0, 0.0, true, false, DT);
+    s.note_air(8.0, 0.0, true, false, false, DT);
     frames_without_crouch(&mut s, 0.3);
     assert!(!s.wants_landing_slide());
 }
@@ -190,4 +190,30 @@ fn vertical_speed_never_counts_as_slide_speed() {
     s.step(12.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.1);
     reference.step(12.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.1);
     assert!((s.velocity().length() - reference.velocity().length()).abs() < 1e-4, "{} vs {}", s.velocity().length(), reference.velocity().length());
+}
+
+#[test]
+fn a_toggle_tap_in_the_air_arms_the_landing_slide() {
+    let mut s = slide();
+    s.note_air(8.0, 0.0, false, false, true, DT);
+    frames_without_crouch(&mut s, 0.5);
+    assert!(s.wants_landing_slide(), "a toggle tap is crouch switched on, however early");
+}
+
+#[test]
+fn a_second_toggle_tap_disarms_it() {
+    let mut s = slide();
+    s.note_air(8.0, 0.0, false, false, true, DT);
+    s.note_air(8.0, 0.0, false, false, true, DT);
+    frames_without_crouch(&mut s, 0.3);
+    assert!(!s.wants_landing_slide());
+}
+
+#[test]
+fn landing_clears_a_toggle_tap() {
+    let mut s = slide();
+    s.note_air(8.0, 0.0, false, false, true, DT);
+    s.landed();
+    fall(&mut s, 8.0, false);
+    assert!(!s.wants_landing_slide());
 }

@@ -39,7 +39,7 @@ public native func CyberfallWallChargeTier() -> Int32;
 // Momentum slide.
 public native func CyberfallSlideSetSettings(enabled: Bool, speed: Float) -> Void;
 public native func CyberfallSlideEnabled() -> Bool;
-public native func CyberfallSlideNoteAir(vx: Float, vy: Float, crouchPressed: Bool, crouchHeld: Bool, dt: Float) -> Void;
+public native func CyberfallSlideNoteAir(vx: Float, vy: Float, crouchPressed: Bool, crouchHeld: Bool, toggleTap: Bool, dt: Float) -> Void;
 public native func CyberfallSlideWantsLanding() -> Bool;
 // now: game time, seconds.
 public native func CyberfallSlideBegin(vx: Float, vy: Float, now: Float, fromLanding: Bool) -> Void;

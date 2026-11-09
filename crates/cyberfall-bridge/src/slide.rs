@@ -22,6 +22,8 @@ pub struct Slide {
     air: [Vec3; 2],
     since_crouch_press: f32,
     crouch_held_in_air: bool,
+    // Toggle crouch: a tap in the air switches crouch on for the landing, a second tap off.
+    toggle_armed: bool,
     last_begin: Option<f32>,
     input: Input,
     crouch_held: bool,
@@ -38,6 +40,7 @@ impl Slide {
             air: [Vec3::ZERO; 2],
             since_crouch_press: f32::INFINITY,
             crouch_held_in_air: false,
+            toggle_armed: false,
             last_begin: None,
             input: Input::default(),
             crouch_held: false,
@@ -64,8 +67,9 @@ impl Slide {
         &self.tuning
     }
 
-    /// Every airborne frame.
-    pub fn note_air(&mut self, vx: f32, vy: f32, crouch_pressed: bool, crouch_held: bool, dt: f32) {
+    /// Every airborne frame. `crouch_pressed`/`crouch_held` are hold-mode crouch, `toggle_tap` a toggle-crouch tap.
+    pub fn note_air(&mut self, vx: f32, vy: f32, crouch_pressed: bool, crouch_held: bool, toggle_tap: bool, dt: f32) {
+        self.toggle_armed ^= toggle_tap;
         self.air = [Vec3::new(vx, vy, 0.0), self.air[0]];
         self.since_crouch_press = if crouch_pressed { 0.0 } else { self.since_crouch_press + dt };
         self.crouch_held_in_air = crouch_held;
@@ -77,7 +81,7 @@ impl Slide {
 
     /// Landing now should go straight into a slide.
     pub fn wants_landing_slide(&self) -> bool {
-        let crouched = self.crouch_held_in_air || self.since_crouch_press <= self.tuning.host_slide_crouch_window + 1e-4;
+        let crouched = self.crouch_held_in_air || self.toggle_armed || self.since_crouch_press <= self.tuning.host_slide_crouch_window + 1e-4;
         self.enabled && crouched && self.air_speed() >= self.tuning.host_slide_entry_speed
     }
 
@@ -86,6 +90,7 @@ impl Slide {
         self.air = [Vec3::ZERO; 2];
         self.since_crouch_press = f32::INFINITY;
         self.crouch_held_in_air = false;
+        self.toggle_armed = false;
     }
 
     /// A slide starts, at game time `now` seconds. A landing slide keeps the speed from before impact.

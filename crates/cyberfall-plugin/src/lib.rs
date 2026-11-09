@@ -208,8 +208,8 @@ fn slide_enabled() -> bool {
     bridge().slide().enabled()
 }
 
-fn slide_note_air(vx: f32, vy: f32, crouch_pressed: bool, crouch_held: bool, dt: f32) {
-    bridge().slide_mut().note_air(vx, vy, crouch_pressed, crouch_held, dt);
+fn slide_note_air(vx: f32, vy: f32, crouch_pressed: bool, crouch_held: bool, toggle_tap: bool, dt: f32) {
+    bridge().slide_mut().note_air(vx, vy, crouch_pressed, crouch_held, toggle_tap, dt);
 }
 
 fn slide_wants_landing() -> bool {

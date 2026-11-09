@@ -155,8 +155,7 @@ impl Bridge {
         self.kick_tier
     }
 
-    /// The input and tuning `wall_step` sees this frame: with charge-jump legs the kick
-    /// waits for Jump to be let go, and grows with how long it was held.
+    /// With charge-jump legs the kick waits for Jump to be let go.
     fn charge_frame(&mut self, dt: f32) -> (WallInput, Tuning) {
         let mut input = self.input;
         if !self.state.running || !self.has_charge_jump {

@@ -21,7 +21,13 @@ gravity is zeroed with a temporary `locomotionParameters` and restored with
 | `LocomotionGroundEvents.OnEnter` (664) | Landing frees the same-wall rule. The air dash (`dodge`, `DodgeEvents` 2279) is a ground state class, so this also fires mid-air. |
 | `DoubleJumpDecisions.EnterCondition` (4244) | Jump on a wall is a kick, not a double jump. |
 | `FallDecisions.EnterCondition` (3828) | `doubleJump` has no transition to itself, so V drops to `fall` once a wall gives the double jump back. |
-| `LocomotionTransition.IsCurrentFallSpeedTooFastToEnter` (245) | Falling-speed lock on double jump and dash, lifted by Legendary+ Reinforced Tendons. |
+| `LocomotionTransition.IsCurrentFallSpeedTooFastToEnter` (245) | Falling-speed lock on double jump and dash, lifted by Legendary+ Reinforced Tendons and Fortified Ankles. |
+| `ChargeJumpDecisions.EnterCondition` (4310) | No base-game charge jump while charging a wall kick. |
+| `SlideDecisions.EnterCondition` (1920), `StandDecisions.ToSlide` (917) | An armed landing goes straight into a slide. |
+| `CrouchDecisions.OnAttach` (1083) | Keeps the slide decisions, to switch their enter condition on for a landing slide. |
+| `SlideDecisions.ShouldExit` | Leave the slide when the plugin ends it. |
+| `SlideEvents.OnEnter` / `OnUpdate` / `OnExit` (2045) | The per-frame slide update, also used by `slideAfterFall`. |
+| `LocomotionEventsTransition.OnUpdate` (429) | Sprint speed for the slide, and forgetting a fall that didn't slide. |
 | `PerkDisplayTooltipController.GetLevelDescription` (`UI/fullscreen/perks/perksMenuTooltips.swift` 250) | Air Dash perk text. |
 
 ## Game state the mod reads or writes
@@ -37,10 +43,9 @@ gravity is zeroed with a temporary `locomotionParameters` and restored with
 Cyberpunk is Z-up in metres like pilot-core, but its forward is +Y, so the facing
 is passed as a vector and the plugin takes `atan2(y, x)`.
 
-## Slides, landings and charge jumps (trace, 2026-11-08)
+## Slides, landings and charge jumps
 
-From a per-frame trace of Locomotion state, speed and inputs, with SmoothMovement,
-SmootherDodgeAndDash and Immersive First Person installed.
+Measured with SmoothMovement, SmootherDodgeAndDash and Immersive First Person installed.
 
 - **A landing is `fall`/`jump` → `regularLand` for one frame → `stand` or `sprint`.**
   Horizontal speed barely changes through `regularLand`; the following `stand`/`sprint`

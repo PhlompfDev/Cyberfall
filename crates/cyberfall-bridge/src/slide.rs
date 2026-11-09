@@ -1,5 +1,4 @@
-//! Titanfall momentum slide for Cyberpunk: crouch into a landing to slide at the speed
-//! V fell with, and slides keep and lose speed by Titanfall's curve instead of the game's.
+//! Titanfall momentum slide: crouch into a landing to slide at the speed V fell with.
 
 use glam::Vec3;
 use pilot_core::slide::{boosted_speed, slide_velocity};
@@ -8,8 +7,7 @@ use pilot_core::Tuning;
 
 const MIN_SCALE: f32 = 0.25;
 const MAX_SCALE: f32 = 2.0;
-/// Reported speed above the slide's own that still counts as no loss, m/s. Cyberpunk's
-/// controller clips a little speed every frame; only a real hit should slow a slide.
+/// Speed loss per frame that isn't a hit, m/s. Cyberpunk's collision clips a little every frame.
 const COLLISION_SLACK: f32 = 0.5;
 
 pub struct Slide {
@@ -25,9 +23,9 @@ pub struct Slide {
     // Toggle crouch: a tap in the air switches crouch on for the landing, a second tap off.
     toggle_armed: bool,
     last_begin: Option<f32>,
-    // The game hasn't been given the start speed yet, so its first report says nothing about collisions.
+    // First frame: the game hasn't been given the start speed yet.
     fresh: bool,
-    // V's sprint speed in Cyberpunk, buffs included. 0 until the game reports one.
+    // V's sprint speed, 0 until the game reports one.
     sprint_speed: f32,
     input: Input,
     crouch_held: bool,
@@ -73,7 +71,7 @@ impl Slide {
         &self.tuning
     }
 
-    /// Every airborne frame. `crouch_pressed`/`crouch_held` are hold-mode crouch, `toggle_tap` a toggle-crouch tap.
+    /// Every airborne frame. `toggle_tap` is a toggle-crouch tap.
     pub fn note_air(&mut self, vx: f32, vy: f32, crouch_pressed: bool, crouch_held: bool, toggle_tap: bool, dt: f32) {
         self.toggle_armed ^= toggle_tap;
         self.air = [Vec3::new(vx, vy, 0.0), self.air[0]];
@@ -122,7 +120,7 @@ impl Slide {
         self.landed();
     }
 
-    /// While sprinting: the speed sprinting holds, so a slide never gives back more than that.
+    /// While sprinting: V's sprint speed, the slowest a fast slide eases down to.
     pub fn set_sprint_speed(&mut self, speed: f32) {
         self.sprint_speed = speed.max(0.0);
     }
@@ -146,8 +144,7 @@ impl Slide {
         let normal = Vec3::new(nx, ny, nz);
         let ground = (normal.length_squared() > 1e-6).then(|| normal.normalize());
         let mut flat = slide_velocity(direction * held, self.input.wish_dir(), ground, &self.tuning, dt);
-        // Cyberpunk runs faster than Titanfall: a slide going at least sprint speed eases down to it,
-        // never below. A slide slowed under it, by a hit or a slow start, runs out as in Titanfall.
+        // A slide at sprint speed or faster eases down to it, never below.
         if held >= self.sprint_speed && flat.length() < self.sprint_speed {
             flat = flat.try_normalize().unwrap_or(direction) * self.sprint_speed;
         }

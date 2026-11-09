@@ -1,14 +1,23 @@
 // Legendary+ Reinforced Tendons fall perks, and the Air Dash perk text.
 
+// Any Reinforced Tendons, modded variants included, at Legendary or above.
 public func CyberfallHasLegendaryTendons(owner: ref<GameObject>) -> Bool {
   let player: ref<PlayerPuppet> = owner as PlayerPuppet;
   if !IsDefined(player) {
     return false;
   };
   let legs: TweakDBID = ItemID.GetTDBID(EquipmentSystem.GetData(player).GetActiveItem(gamedataEquipmentArea.LegsCW));
-  return legs == t"Items.AdvancedBoostedTendonsLegendary"
-      || legs == t"Items.AdvancedBoostedTendonsLegendaryPlus"
-      || legs == t"Items.AdvancedBoostedTendonsLegendaryPlusPlus";
+  if !Equals(TweakDBInterface.GetCName(legs + t".cyberwareType", n"None"), n"BoostedTendons") {
+    return false;
+  };
+  let record: ref<Item_Record> = TweakDBInterface.GetItemRecord(legs);
+  if !IsDefined(record) || !IsDefined(record.Quality()) {
+    return false;
+  };
+  let quality: gamedataQuality = record.Quality().Type();
+  return Equals(quality, gamedataQuality.Legendary)
+      || Equals(quality, gamedataQuality.LegendaryPlus)
+      || Equals(quality, gamedataQuality.LegendaryPlusPlus);
 }
 
 // No falling-speed limit on double jump and dash.
